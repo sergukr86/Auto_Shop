@@ -1,0 +1,11 @@
+{% for order in all_orders %}
+    Order №: {{ order.order.id }} |
+    Dealer: {{ order.order.dealership.name }} |
+    Client: {{ order.order.client.name }} |
+    Car: {{ order.order.car.car_type.brand }} |
+    {{ order.order.car.car_type.model_auto }} |
+    Color: {{ order.order.car.color }} |
+    Price: {{ order.order.car.car_type.price }} |
+    Quantity: {{ order.quantity }} |
+    Paid: {{ order.is_paid }} | <br>
+{% endfor %}
