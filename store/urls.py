@@ -16,4 +16,4 @@ urlpatterns = [
     path("order/", views.order, name="order_form"),
     path("quantity/", views.quantity, name="quantity"),
     path("all-orders/", views.all_orders, name="all_orders"),
-    ]
+]

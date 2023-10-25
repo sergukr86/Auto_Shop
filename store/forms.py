@@ -34,6 +34,7 @@ class ClientForm(forms.ModelForm):
 #         queryset=Client.objects.all(), widget=forms.CheckboxSelectMultiple
 #     )
 
+
 class DealershipForm(forms.ModelForm):
     class Meta:
         model = Dealership
