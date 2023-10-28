@@ -45,7 +45,7 @@ class Car(models.Model):
         self.save()
 
     def __str__(self):
-        return self.color
+        return f"{self.car_type}"
 
 
 class Licence(models.Model):
@@ -73,6 +73,9 @@ class Order(models.Model):
         Dealership, on_delete=models.CASCADE, related_name="orders"
     )
     car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name="orders")
+
+    def __str__(self):
+        return f"{self.client}, {self.dealership}"
 
 
 class OrderQuantity(models.Model):

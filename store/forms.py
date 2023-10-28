@@ -25,16 +25,6 @@ class ClientForm(forms.ModelForm):
         fields = ["name", "email", "phone"]
 
 
-# class DealershipForm(forms.Form):
-#     name = forms.CharField(max_length=50)
-#     available_car_types = forms.ModelMultipleChoiceField(
-#         queryset=CarType.objects.all(), widget=forms.CheckboxSelectMultiple
-#     )
-#     clients = forms.ModelMultipleChoiceField(
-#         queryset=Client.objects.all(), widget=forms.CheckboxSelectMultiple
-#     )
-
-
 class DealershipForm(forms.ModelForm):
     class Meta:
         model = Dealership
@@ -48,15 +38,20 @@ class CarTypeForm(forms.ModelForm):
 
 
 class CarForm(forms.ModelForm):
+
     class Meta:
         model = Car
         fields = ["car_type", "color", "year", "blocked_by_order", "owner"]
+        exclude = ["blocked_by_order", "owner"]
 
 
-class OrderForm(forms.ModelForm):
-    class Meta:
-        model = Order
-        fields = ["client", "dealership", "car"]
+class OrderForm(forms.Form):
+    dealership = forms.ModelChoiceField(queryset=Dealership.objects.all())
+    client = forms.ModelChoiceField(queryset=Client.objects.all())
+    car = forms.ModelMultipleChoiceField(queryset=Car.objects.filter(
+        blocked_by_order__isnull=True).filter(
+        owner__isnull=True)
+    )
 
 
 class QuantityForm(forms.ModelForm):

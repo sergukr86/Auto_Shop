@@ -89,14 +89,6 @@ def dealer_edit(request, pk):
     form = DealershipForm(request.POST, instance=deal)
     if form.is_valid():
         form.save()
-        # name = form.cleaned_data["name"]
-        # clients = form.cleaned_data["clients"]
-        # available_car_types = form.cleaned_data["available_car_types"]
-        # dealership = Dealership.objects.create(
-        #     name=name,
-        # )
-        # dealership.clients.set(clients)
-        # dealership.available_car_types.set(available_car_types)
         return redirect("dealers")
 
     return render(request, "dealer_edit.html", {"form": form})
@@ -113,7 +105,12 @@ def order(request):
         return render(request, "order.html", context={"form": form})
     form = OrderForm(request.POST)
     if form.is_valid():
-        form.save()
+        client = form.cleaned_data["client"]
+        dealership = form.cleaned_data["dealership"]
+        cars = form.cleaned_data["car"]
+        Order.objects.create(
+            client=client, dealership=dealership, car=cars[0]
+        )
         return redirect("quantity")
     return render(request, "order.html", context={"form": form})
 
@@ -125,13 +122,52 @@ def quantity(request):
     form = QuantityForm(request.POST)
     if form.is_valid():
         form.save()
+
         return redirect("all_orders")
     return render(request, "order.html", context={"form": form})
 
 
+def order_edit(request, pk):
+    order_q = OrderQuantity.objects.get(pk=pk)
+    order = Order.objects.get(id=order_q.order.id)
+    car = Car.objects.get(id=order.car_id)
+    if request.method == "GET":
+        form = QuantityForm(instance=order_q)
+        return render(request, "order_edit.html", {"form": form})
+    form = QuantityForm(request.POST, instance=order_q)
+    if form.is_valid():
+        if car.blocked_by_order_id:
+            car.unblock()
+        else:
+            car.block(order)
+        if order_q.is_paid == 1:
+            car.sell()
+        form.save()
+        return redirect("all_orders")
+
+    return render(request, "order_edit.html", {"form": form})
+
+
 def all_orders(request):
-    order = OrderQuantity.objects.all()
-    return render(request, "all-orders.html", context={"all_orders": order})
+    orders = OrderQuantity.objects.all()
+    return render(request, "all-orders.html", context={"all_orders": orders})
 
 
-# TODO Обробити замовлення, продумати резервування та покупку авто в БД
+# TODO обмежити доступ дилерам до всіх авто
+# TODO FORMS >> dealership = forms.ModelChoiceField(queryset=Dealership.objects.all())
+
+
+# Треба зробити магазин продажу машин. Використовуйте models.py як основу структури бази даних.
+#
+# 1. Замовлення машин. Клієнт може додати багато типів машин в одне замовлення.
+# Додавання до замовлення дозволяється лише якщо є відповідна кількість авто в запасі.
+# Коли тип машини доданий в замовлення, то відповідна кількість авто заблоковано в БД і не можуть бути враховані в інші
+# замовлення. Клієнт може відмінити замовлення, тоді авто розблоковуються.
+#
+# 2. Замовлення можна оплатити. Оплата це кнопка "Сплатити". Вважаємо що оплата миттєва і завжди працює.
+#
+# 3. Після оплати треба звʼязати авто з клієнтом у БД.
+#
+# 4. Авто ніколи не видаляються з бази даних.
+#
+# Додатково можна реалізувати видачу реєстраційного номеру до авто в момент сплати.
